@@ -1,4 +1,5 @@
 /* Copyright (C) 2010 by Tommi Rantala <tt.rantala@gmail.com>
+ * Copyright (C) 2010 by Leonid Moiseichuk <leonid.moiseichuk@nokia.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -161,6 +162,23 @@ test_gettimeofday(void)
 	}
 }
 
+void
+test_clock(void)
+{
+	int i;
+	clock_t c1, c2;
+	printf("clock()\n");
+	for (i=0; i < ROUNDS; ++i) {
+		c1 = clock();
+		if (c1 == (clock_t)-1) abort();
+		while (1) {
+			c2 = clock();
+			if (c1 != c2) break;
+		}
+		printf("   %.9f seconds\n", (double)(c2 - c1) / (double)CLOCKS_PER_SEC);
+	}
+}
+
 int main(void)
 {
 	test_clock_realtime();
@@ -169,5 +187,6 @@ int main(void)
 	test_clock_thread_cputime_id();
 	test_getrusage();
 	test_gettimeofday();
+	test_clock();
 	return 0;
 }
