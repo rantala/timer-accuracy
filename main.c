@@ -28,17 +28,16 @@
 #include <sys/resource.h>
 
 void
-test_clock_process_cputime_id(void)
+test_clock_id(clockid_t clk_id, const char *clk_id_str)
 {
-#ifdef CLOCK_PROCESS_CPUTIME_ID
 	int i;
 	struct timespec t1, t2;
 	long long s1, s2;
-	printf("clock_gettime(CLOCK_PROCESS_CPUTIME_ID)\n");
+	printf("clock_gettime(%s)\n", clk_id_str);
 	for (i=0; i < ROUNDS; ++i) {
-		if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t1) < 0) abort();
+		if (clock_gettime(clk_id, &t1) < 0) abort();
 		while (1) {
-			if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t2) < 0) abort();
+			if (clock_gettime(clk_id, &t2) < 0) abort();
 			if (t1.tv_sec != t2.tv_sec || t1.tv_nsec != t2.tv_nsec) break;
 		}
 		s1 = t1.tv_sec * 1000000000 + t1.tv_nsec; 
@@ -47,79 +46,7 @@ test_clock_process_cputime_id(void)
 				(s2-s1)/1000000000,
 				(s2-s1)%1000000000);
 	}
-#endif
 }
-
-void
-test_clock_thread_cputime_id(void)
-{
-#ifdef CLOCK_THREAD_CPUTIME_ID
-	int i;
-	struct timespec t1, t2;
-	long long s1, s2;
-	printf("clock_gettime(CLOCK_THREAD_CPUTIME_ID)\n");
-	for (i=0; i < ROUNDS; ++i) {
-		if (clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t1) < 0) abort();
-		while (1) {
-			if (clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t2) < 0) abort();
-			if (t1.tv_sec != t2.tv_sec || t1.tv_nsec != t2.tv_nsec) break;
-		}
-		s1 = t1.tv_sec * 1000000000 + t1.tv_nsec; 
-		s2 = t2.tv_sec * 1000000000 + t2.tv_nsec; 
-		printf("   %lld.%09lld seconds\n",
-				(s2-s1)/1000000000,
-				(s2-s1)%1000000000);
-	}
-#endif
-}
-
-void
-test_clock_realtime(void)
-{
-#ifdef CLOCK_REALTIME
-	int i;
-	struct timespec t1, t2;
-	long long s1, s2;
-	printf("clock_gettime(CLOCK_REALTIME)\n");
-	for (i=0; i < ROUNDS; ++i) {
-		if (clock_gettime(CLOCK_REALTIME, &t1) < 0) abort();
-		while (1) {
-			if (clock_gettime(CLOCK_REALTIME, &t2) < 0) abort();
-			if (t1.tv_sec != t2.tv_sec || t1.tv_nsec != t2.tv_nsec) break;
-		}
-		s1 = t1.tv_sec * 1000000000 + t1.tv_nsec; 
-		s2 = t2.tv_sec * 1000000000 + t2.tv_nsec; 
-		printf("   %lld.%09lld seconds\n",
-				(s2-s1)/1000000000,
-				(s2-s1)%1000000000);
-	}
-#endif
-}
-
-
-void
-test_clock_monotonic(void)
-{
-#ifdef CLOCK_MONOTONIC
-	int i;
-	struct timespec t1, t2;
-	long long s1, s2;
-	printf("clock_gettime(CLOCK_MONOTONIC)\n");
-	for (i=0; i < ROUNDS; ++i) {
-		if (clock_gettime(CLOCK_MONOTONIC, &t1) < 0) abort();
-		while (1) {
-			if (clock_gettime(CLOCK_MONOTONIC, &t2) < 0) abort();
-			if (t1.tv_sec != t2.tv_sec || t1.tv_nsec != t2.tv_nsec) break;
-		}
-		s1 = t1.tv_sec * 1000000000 + t1.tv_nsec; 
-		s2 = t2.tv_sec * 1000000000 + t2.tv_nsec; 
-		printf("   %lld.%09lld seconds\n",
-				(s2-s1)/1000000000,
-				(s2-s1)%1000000000);
-	}
-#endif
-}
-
 
 void
 test_getrusage(void)
@@ -181,10 +108,18 @@ test_clock(void)
 
 int main(void)
 {
-	test_clock_realtime();
-	test_clock_monotonic();
-	test_clock_process_cputime_id();
-	test_clock_thread_cputime_id();
+#ifdef CLOCK_REALTIME
+	test_clock_id(CLOCK_REALTIME, "CLOCK_REALTIME");
+#endif
+#ifdef CLOCK_MONOTONIC
+	test_clock_id(CLOCK_MONOTONIC, "CLOCK_MONOTONIC");
+#endif
+#ifdef CLOCK_PROCESS_CPUTIME_ID
+	test_clock_id(CLOCK_PROCESS_CPUTIME_ID, "CLOCK_PROCESS_CPUTIME_ID");
+#endif
+#ifdef CLOCK_THREAD_CPUTIME_ID
+	test_clock_id(CLOCK_THREAD_CPUTIME_ID, "CLOCK_THREAD_CPUTIME_ID");
+#endif
 	test_getrusage();
 	test_gettimeofday();
 	test_clock();
